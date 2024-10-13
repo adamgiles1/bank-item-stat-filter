@@ -16,4 +16,24 @@ public interface BankEquipmentStatFilterConfig extends Config
     {
         return 7; // Default value
     }
+
+    @ConfigItem(
+            keyName = "checkInventory",
+            name = "Check Inventory",
+            description = "Also check the inventory of the player"
+    )
+    default boolean checkInventory()
+    {
+        return true; // Default value
+    }
+
+    @ConfigItem(
+            keyName = "checkEquipped",
+            name = "Check Equipped",
+            description = "Also check the equipped gear of the player"
+    )
+    default boolean checkEquipped()
+    {
+        return true; // Default value
+    }
 }
