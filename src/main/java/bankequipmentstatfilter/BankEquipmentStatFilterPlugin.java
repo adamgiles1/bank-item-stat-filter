@@ -101,7 +101,7 @@ public class BankEquipmentStatFilterPlugin extends Plugin
 	public void bankFilter(EquipmentInventorySlot slot, EquipmentStat statType, boolean allSlots)
 	{
 		// Still force opening the bank before displaying items, to prevent confusion
-		if (items.get(InventoryIDs.BANK) == null) {
+		if (!items.containsKey(InventoryIDs.BANK)) {
 			panel.displayMessage("You need to open your bank once so the plugin can sync with it");
 			return;
 		}

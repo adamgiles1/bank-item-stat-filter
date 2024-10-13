@@ -1,12 +1,10 @@
 package bankequipmentstatfilter;
 
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.InventoryID;
 
 import java.util.Arrays;
 import java.util.function.Function;
 
-@Slf4j
 public enum InventoryIDs {
     BANK(InventoryID.BANK.getId()),
     // Checks both inventory and current equipment
@@ -33,7 +31,7 @@ public enum InventoryIDs {
     }
 
     public boolean shouldUseInventory() {
-        // If there is no check settings function, allow the items to be checked
+        // Any enum values without a check function default to allowing showing that inventory
         if (checkSettingsFunc == null) {
             return true;
         }
