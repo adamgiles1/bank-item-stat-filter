@@ -7,9 +7,7 @@ import java.util.function.Function;
 
 public enum InventoryIDs {
     BANK(InventoryID.BANK.getId()),
-    // Checks both inventory and current equipment
     INVENTORY(InventoryID.INVENTORY.getId(), BankEquipmentStatFilterConfig::checkInventory),
-    // Checks both inventory and current equipment
     EQUIPMENT(InventoryID.EQUIPMENT.getId(), BankEquipmentStatFilterConfig::checkEquipped);
 
     InventoryIDs(int inventoryId) {
