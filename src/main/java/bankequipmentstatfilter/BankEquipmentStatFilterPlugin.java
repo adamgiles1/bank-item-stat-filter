@@ -43,7 +43,7 @@ public class BankEquipmentStatFilterPlugin extends Plugin
 
 	private NavigationButton navButton;
 
-	private final Map<InventoryIDs, ItemWithStat[]> items = new HashMap<>();
+	private Map<InventoryIDs, ItemWithStat[]> items;
 
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
@@ -74,6 +74,8 @@ public class BankEquipmentStatFilterPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		items = new HashMap<>();
+
 		panel = injector.getInstance(BankEquipmentStatFilterPanel.class);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(BankEquipmentStatFilterPlugin.class, "pluginIcon.png");
