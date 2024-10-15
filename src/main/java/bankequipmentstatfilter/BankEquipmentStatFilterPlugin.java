@@ -36,36 +36,46 @@ public class BankEquipmentStatFilterPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
+	@Inject
+	BankEquipmentStatFilterConfig config;
+
 	private BankEquipmentStatFilterPanel panel;
 
 	private NavigationButton navButton;
 
-	private ItemWithStat[] items;
+	private Map<InventoryIDs, ItemWithStat[]> items;
 
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		if (event.getItemContainer() == client.getItemContainer(InventoryID.BANK))
-		{
-			Item[] bankItems = event.getItemContainer().getItems();
+		int itemContainerId = event.getItemContainer().getId();
+		InventoryIDs inventoryMatch = InventoryIDs.getById(itemContainerId);
 
-			items = Arrays.stream(bankItems)
-					.map(item -> {
-						ItemStats stats = itemManager.getItemStats(item.getId(), false);
-						ItemComposition composition = itemManager.getItemComposition(item.getId());
-						if (stats == null || !stats.isEquipable()) {
-							return null;
-						}
-						return new ItemWithStat(item.getId(), stats, composition.getName());
-					})
-					.filter(Objects::nonNull)
-					.toArray(ItemWithStat[]::new);
+		if (inventoryMatch == null) {
+			return;
 		}
+
+		Item[] invItems = event.getItemContainer().getItems();
+		ItemWithStat[] invItemsWithStats = Arrays.stream(invItems)
+			.map(item -> {
+				ItemStats stats = itemManager.getItemStats(item.getId(), false);
+				ItemComposition composition = itemManager.getItemComposition(item.getId());
+				if (stats == null || !stats.isEquipable()) {
+					return null;
+				}
+				return new ItemWithStat(item.getId(), stats, composition.getName());
+			})
+			.filter(Objects::nonNull)
+			.toArray(ItemWithStat[]::new);
+
+		items.put(inventoryMatch, invItemsWithStats);
 	}
 
 	@Override
 	protected void startUp()
 	{
+		items = new HashMap<>();
+
 		panel = injector.getInstance(BankEquipmentStatFilterPanel.class);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(BankEquipmentStatFilterPlugin.class, "pluginIcon.png");
@@ -78,6 +88,8 @@ public class BankEquipmentStatFilterPlugin extends Plugin
 				.build();
 
 		clientToolbar.addNavigation(navButton);
+
+		InventoryIDs.setConfig(config);
 	}
 
 	@Override
@@ -88,13 +100,15 @@ public class BankEquipmentStatFilterPlugin extends Plugin
 
 	public void bankFilter(EquipmentInventorySlot slot, EquipmentStat statType, boolean allSlots)
 	{
-		if (items == null) {
+		// Still force opening the bank before displaying items, to prevent confusion
+		if (!items.containsKey(InventoryIDs.BANK)) {
 			panel.displayMessage("You need to open your bank once so the plugin can sync with it");
 			return;
 		}
 
-
-		Map<Integer, List<ItemWithStat>> sortedItems = Arrays.stream(items)
+		Map<Integer, List<ItemWithStat>> sortedItems = items.entrySet().stream()
+				.filter(entry -> entry.getKey().shouldUseInventory())
+				.flatMap(entry -> Arrays.stream(entry.getValue()))
 				.filter(item -> getItemStat(item.getStats(), statType) > 0 && (item.getStats().getEquipment().getSlot() == slot.getSlotIdx() || allSlots))
 				.collect(Collectors.groupingBy(item -> item.getStats().getEquipment().getSlot()));
 
